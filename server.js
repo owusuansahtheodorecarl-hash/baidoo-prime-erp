@@ -74,9 +74,10 @@ app.delete('/api/notifications/:id', (req, res) => {
 });
 
 // ==========================================
-// 4. FALLBACK ROUTE (Express 5 Compatible Syntax)
+// 4. FALLBACK ROUTE (Bulletproof Express 5 Handler)
 // ==========================================
-app.get('/*', (req, res) => {
+// Any request that didn't match static files or API routes gets sent to index.html
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

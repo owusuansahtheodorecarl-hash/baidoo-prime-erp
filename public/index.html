@@ -1,535 +1,1102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Baidoo Prime ERP</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background-color: #f4f6f9; color: #333; min-height: 100vh; }
-    
-    /* Welcome & Auth Screen */
-    #auth-screen {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; background: linear-gradient(135deg, #1a213e 0%, #0f1426 100%);
-      color: #fff; padding: 20px; text-align: center;
-    }
-    .welcome-card {
-      background: #ffffff; color: #333; padding: 35px; border-radius: 12px;
-      width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
-    .welcome-card h2 { color: #1a213e; margin-bottom: 5px; font-size: 22px; }
-    .welcome-card p { color: #666; font-size: 13px; margin-bottom: 25px; }
-    .auth-form input, .auth-form select, .auth-form button {
-      width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 6px;
-      border: 1px solid #ccc; font-size: 14px; outline: none;
-    }
-    .auth-form button {
-      background-color: #1a213e; color: #fff; font-weight: 600; border: none; cursor: pointer; transition: 0.2s;
-    }
-    .auth-form button:hover { background-color: #2b355e; }
-    .toggle-link { color: #1a213e; cursor: pointer; font-size: 12px; text-decoration: underline; margin-top: 10px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baidoo Prime ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f4f6f9; color: #333; min-height: 100vh; }
+        
+        /* 1. WELCOME & AUTH SCREEN */
+        #auth-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; background: linear-gradient(135deg, #1a213e 0%, #0f1426 100%);
+            color: #fff; padding: 20px; text-align: center;
+        }
+        .welcome-card {
+            background: #ffffff; color: #333; padding: 35px; border-radius: 12px;
+            width: 100%; max-width: 440px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .welcome-card h2 { color: #1a213e; margin-bottom: 5px; font-size: 22px; font-weight: 700; }
+        .welcome-card p { color: #666; font-size: 13px; margin-bottom: 25px; }
+        .auth-form input, .auth-form select, .auth-form button {
+            width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 6px;
+            border: 1px solid #ccc; font-size: 14px; outline: none;
+        }
+        .auth-form button {
+            background-color: #1a213e; color: #fff; font-weight: 600; border: none; cursor: pointer; transition: 0.2s;
+        }
+        .auth-form button:hover { background-color: #2b355e; }
+        .toggle-link { color: #1a213e; cursor: pointer; font-size: 12px; text-decoration: underline; font-weight: 500; }
 
-    /* Main Workspace */
-    #app-workspace { display: none; }
-    header {
-      background-color: #1a213e; color: #fff; padding: 15px 30px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .user-badge { font-size: 13px; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; }
-    .btn-logout { background: #e74c3c; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
+        /* 2. APP WORKSPACE */
+        #app-workspace { display: none; padding-bottom: 40px; }
+        .container { max-width: 1100px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        
+        /* Top Bar */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: #1a213e; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; }
+        .top-bar h3 { margin: 0; font-size: 16px; }
+        .user-badge { font-size: 12px; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; }
+        
+        /* Notification Bell & Dropdown */
+        .notif-container { position: relative; display: inline-block; }
+        .btn-bell { background: #2c3e50; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; position: relative; }
+        .btn-bell:hover { background: #34495e; }
+        .badge-pill { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; display: none; border: 2px solid #1a213e; }
+        .notif-dropdown { display: none; position: absolute; right: 0; top: 38px; width: 340px; background: white; border: 1px solid #cbd5e1; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 6px; z-index: 1000; padding: 12px; }
+        .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 8px; }
+        .notif-title { font-size: 13px; font-weight: bold; color: #1a213e; }
+        .btn-mark-read { background: #e74c3c; color: white; border: none; padding: 4px 8px; font-size: 10px; font-weight: bold; border-radius: 3px; cursor: pointer; }
+        .notif-item { padding: 8px; background: #f8fafc; border-left: 3px solid #3b82f6; margin-bottom: 6px; border-radius: 3px; font-size: 12px; color: #334155; }
+        .notif-item.unread { background: #eff6ff; border-left-color: #2563eb; font-weight: 500; }
+        .notif-item.urgent { border-left-color: #ef4444; background: #fef2f2; }
 
-    nav { background-color: #2b355e; display: flex; padding: 0 20px; gap: 5px; }
-    nav button {
-      background: none; border: none; color: #ccc; padding: 14px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
-    }
-    nav button.active, nav button:hover { color: #fff; border-bottom: 3px solid #e74c3c; }
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #eef2f5; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 120px; padding: 10px 5px; border: none; background: #eef2f5; font-weight: bold; color: #555; border-radius: 4px; cursor: pointer; text-align: center; font-size: 12px; position: relative; }
+        .tab-btn.active { background: #1a213e; color: white; }
+        .tab-badge { display: inline-block; background: #e74c3c; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 4px; vertical-align: middle; }
+        .sub-text { color: #666; font-size: 13px; margin-bottom: 15px; }
+        
+        .form-group { margin-bottom: 15px; position: relative; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; font-size: 13px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 13px; }
+        
+        /* Auto-Suggest List Style */
+        .autocomplete-suggestions {
+            position: absolute; border: 1px solid #cbd5e1; border-top: none; z-index: 99;
+            top: 100%; left: 0; right: 0; background-color: #fff; max-height: 180px; overflow-y: auto;
+            border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .autocomplete-suggestion { padding: 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+        .autocomplete-suggestion:hover { background-color: #eef2f7; }
 
-    main { padding: 30px; max-width: 1200px; margin: 0 auto; }
-    .card { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 25px; }
-    .card-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #1a213e; display: flex; justify-content: space-between; align-items: center; }
+        /* Dispatcher Box */
+        .dispatcher-box { display: none; background: #0f172a; color: white; border-radius: 8px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+        .dispatcher-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 12px; }
+        .dispatcher-title { font-size: 14px; font-weight: bold; color: #38bdf8; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-    th { background-color: #f8f9fa; color: #555; }
+        /* Dashboard Cards */
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .card { background: #f8f9fa; border: 1px solid #e1e8ed; padding: 15px; border-radius: 6px; text-align: center; }
+        .card-val { font-size: 18px; font-weight: bold; color: #1a213e; margin-top: 5px; }
+        .card-lbl { font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase; }
 
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555; }
-    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+        /* Tables */
+        .dash-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .dash-table th, .dash-table td { border: 1px solid #e1e8ed; padding: 8px 12px; text-align: left; }
+        .dash-table th { background: #1a213e; color: white; }
+        .stock-low { background-color: #fce8e6; color: #c0392b; font-weight: bold; }
 
-    .btn { background: #1a213e; color: #fff; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; }
-    .btn-sm { padding: 4px 8px; font-size: 11px; }
-    .btn-danger { background: #e74c3c; }
-    
-    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-completed { background: #d4edda; color: #155724; }
+        /* Direct Messages & Alerts */
+        .dm-box { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 6px; padding: 12px; margin-bottom: 15px; }
+        .dm-title { font-size: 12px; font-weight: bold; color: #3730a3; margin-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .dm-content { font-size: 12px; color: #1e1b4b; background: white; padding: 8px 12px; border-radius: 4px; border: 1px solid #e0e7ff; margin-bottom: 6px; }
+        
+        .lookup-box { background: #f8f9fa; border: 1px dashed #bdc3c7; padding: 15px; border-radius: 6px; margin-bottom: 20px; position: relative; }
+        .lookup-title { font-size: 13px; font-weight: bold; color: #1a213e; margin-bottom: 8px; text-transform: uppercase; }
+        .lookup-row { display: flex; gap: 10px; }
+        .btn-search { width: auto; padding: 10px 15px; background: #2c3e50; margin-top: 0; }
+        
+        .debt-alert { display: none; margin-top: 10px; padding: 10px; border-radius: 4px; font-size: 13px; font-weight: bold; }
+        .has-debt { background: #fadbd8; color: #78281f; border: 1px solid #f5b7b1; }
+        .no-debt { background: #d4efdf; color: #145a32; border: 1px solid #a9dfbf; }
+        
+        /* Payment Box */
+        .action-box { display: none; margin-top: 10px; background: #fff; padding: 12px; border-radius: 4px; border: 1px solid #cbd5e1; }
+        .btn-pay { background: #27ae60; padding: 8px 12px; font-size: 13px; border-radius: 4px; color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-add-cust { background: #2980b9; padding: 8px 12px; font-size: 13px; border-radius: 4px; color: white; border: none; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
+        
+        .permission-badge { display: inline-block; font-size: 11px; padding: 3px 6px; border-radius: 3px; margin-left: 5px; vertical-align: middle; }
+        .badge-locked { background-color: #e74c3c; color: white; }
+        .badge-unlocked { background-color: #2ecc71; color: white; }
+        
+        .summary { background-color: #eef2f5; padding: 15px; border-radius: 4px; margin-top: 15px; }
+        .summary p { margin: 6px 0; font-weight: bold; font-size: 14px; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 12px; }
+        .badge-pending { background-color: #e74c3c; }
+        .badge-partial { background-color: #f39c12; }
+        .badge-paid { background-color: #2ecc71; }
+        
+        button { width: 100%; background-color: #1a213e; color: white; border: none; padding: 12px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #2c3e50; }
 
-    .nav-item { display: none; }
-  </style>
+        /* Printable Receipt */
+        #receiptArea { display: none; background: #fff; padding: 20px; border: 1px dashed #333; margin-top: 20px; font-family: 'Courier New', Courier, monospace; }
+        .receipt-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+        .receipt-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 13px; }
+        .receipt-footer { text-align: center; border-top: 1px dashed #000; padding-top: 10px; margin-top: 15px; font-size: 12px; }
+
+        /* Quick Simulator Bar */
+        .sim-bar { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 15px; border-radius: 6px; margin-top: 25px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+        .sim-btn { background: #475569; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto; margin: 0; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #receiptArea, #receiptArea * { visibility: visible; }
+            #receiptArea { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+            .no-print { display: none !important; }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- 1. LANDING & LOGIN / REGISTRATION SCREEN -->
-  <div id="auth-screen">
+<!-- 1. LANDING & LOGIN SCREEN -->
+<div id="auth-screen">
     <div class="welcome-card">
-      <h2 id="greeting-header">Welcome to Baidoo Prime</h2>
-      <p>Ghana's Premier Heavy Duty & Truck Parts Portal</p>
+        <h2 id="greeting-header">Welcome to Baidoo Prime</h2>
+        <p>Ghana's Premier Heavy Duty & Truck Parts Portal</p>
+        
+        <!-- LOGIN FORM -->
+        <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+            <select id="login-role" required onchange="toggleAuthFields()">
+                <option value="GENERAL_MANAGER">General Manager</option>
+                <option value="CASHIER">Cashier</option>
+                <option value="DISPATCHER">Dispatcher / Supervisor</option>
+                <option value="CUSTOMER">Customer</option>
+            </select>
+            <input type="text" id="login-user" placeholder="Username / Phone Number" required />
+            <input type="password" id="login-pass" placeholder="Password" required />
+            <button type="submit">Sign In to Workspace</button>
+            <p class="toggle-link" onclick="toggleAuthView('register')">New Customer? Register here</p>
+        </form>
 
-      <!-- LOGIN FORM -->
-      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
-        <select id="login-role" required onchange="toggleAuthFields()">
-          <option value="gm">General Manager</option>
-          <option value="cashier">Cashier</option>
-          <option value="dispatcher">Dispatcher</option>
-          <option value="customer">Customer</option>
-        </select>
-        <input type="text" id="login-user" placeholder="Username" required />
-        <input type="password" id="login-pass" placeholder="Password" required />
-        <button type="submit">Sign In to Dashboard</button>
-        <p class="toggle-link" onclick="toggleAuthView('register')">New Customer? Create an account here</p>
-      </form>
-
-      <!-- CUSTOMER SELF-REGISTRATION FORM -->
-      <form id="register-form" class="auth-form" style="display: none;" onsubmit="handleRegister(event)">
-        <input type="text" id="reg-name" placeholder="Full Name or Company Name" required />
-        <input type="tel" id="reg-phone" placeholder="Phone Number" required />
-        <input type="password" id="reg-pass" placeholder="Create Password" required />
-        <button type="submit">Register Customer Account</button>
-        <p class="toggle-link" onclick="toggleAuthView('login')">Already registered? Back to Sign In</p>
-      </form>
+        <!-- CUSTOMER SELF-REGISTRATION FORM -->
+        <form id="register-form" class="auth-form" style="display: none;" onsubmit="handleRegister(event)">
+            <input type="text" id="reg-name" placeholder="Full Name or Business Name" required />
+            <input type="tel" id="reg-phone" placeholder="Phone Number (e.g. 0240000000)" required />
+            <input type="password" id="reg-pass" placeholder="Create Password" required />
+            <button type="submit">Create Customer Account</button>
+            <p class="toggle-link" onclick="toggleAuthView('login')">Already registered? Back to Login</p>
+        </form>
     </div>
-  </div>
+</div>
 
-  <!-- 2. MAIN APPLICATION WORKSPACE -->
-  <div id="app-workspace">
-    <header>
-      <div>
-        <h2 style="font-size: 18px;">Baidoo Prime ERP</h2>
-        <span id="user-display" class="user-badge">Role: General Manager</span>
-      </div>
-      <div>
-        <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
-      </div>
-    </header>
-
-    <nav>
-      <button id="nav-gm" class="nav-item gm" onclick="showTab('gm-tab')">GM Overview</button>
-      <button id="nav-orders" class="nav-item gm cashier" onclick="showTab('orders-tab')">Orders & Sales</button>
-      <button id="nav-inventory" class="nav-item gm dispatcher" onclick="showTab('inventory-tab')">Inventory & Transfers</button>
-      <button id="nav-messages" class="nav-item gm cashier dispatcher" onclick="showTab('messages-tab')">Notifications</button>
-      <button id="nav-customer" class="nav-item customer" onclick="showTab('customer-tab')">My Customer Portal</button>
-    </nav>
-
-    <main>
-      <!-- GENERAL MANAGER TAB -->
-      <div id="gm-tab" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="card-title">System Transparency & Financial Control</div>
-          <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Master supervision view across operations, dispatchers, cashiers, and customer balances.</p>
-          <table>
-            <thead>
-              <tr><th>Metric</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>System Operational Status</td><td>Online & Active</td></tr>
-              <tr><td>Privilege Level</td><td>General Manager (Unrestricted Access)</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ORDERS TAB (GM & CASHIER) -->
-      <div id="orders-tab" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="card-title">Create Sales Order</div>
-          <form onsubmit="createOrder(event)">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-              <div class="form-group">
-                <label>Order Number</label>
-                <input type="text" id="ord-no" placeholder="e.g. ORD-1092" required />
-              </div>
-              <div class="form-group">
-                <label>Customer Phone</label>
-                <input type="text" id="ord-phone" placeholder="0240000000" required />
-              </div>
-              <!-- REASON 4: SIMPLIFIED BRAND LIST -->
-              <div class="form-group">
-                <label>Product Brand</label>
-                <select id="ord-product">
-                  <option value="Sinotruck">Sinotruck</option>
-                  <option value="Shacman">Shacman</option>
-                  <option value="Howo">Howo</option>
-                  <option value="FAW">FAW</option>
-                  <option value="Dongfeng">Dongfeng</option>
-                  <option value="Spare Parts / General">Spare Parts / General</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Total Price (GHS)</label>
-                <input type="number" id="ord-total" step="0.01" onchange="calculateBalance()" required />
-              </div>
-              <!-- REASON 1: READONLY FOR ALL ROLES EXCEPT GM -->
-              <div class="form-group">
-                <label>Amount Paid (GHS)</label>
-                <input type="number" id="ord-paid" step="0.01" onchange="calculateBalance()" required />
-              </div>
-              <div class="form-group">
-                <label>Outstanding Balance (GHS)</label>
-                <input type="number" id="ord-balance" step="0.01" readonly />
-              </div>
+<!-- 2. MAIN APPLICATION WORKSPACE -->
+<div id="app-workspace">
+    <div class="container">
+        <div class="no-print">
+            <!-- Top Navigation Bar -->
+            <div class="top-bar">
+                <div>
+                    <h3 style="margin:0;">Baidoo Prime ERP</h3>
+                    <span id="userBadge" class="user-badge">Logged in: Staff</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <!-- Notification Bell -->
+                    <div class="notif-container">
+                        <button class="btn-bell" onclick="toggleNotifDropdown()">
+                            🔔 Alerts
+                            <span id="bellBadge" class="badge-pill">0</span>
+                        </button>
+                        <div id="notifDropdown" class="notif-dropdown">
+                            <div class="notif-header">
+                                <span class="notif-title">Incoming Staff Alerts</span>
+                                <button class="btn-mark-read" onclick="clearAllReadAlerts()">Clear Read</button>
+                            </div>
+                            <div id="notifFeed"></div>
+                        </div>
+                    </div>
+                    <button onclick="handleLogout()" style="width:auto; padding:6px 12px; font-size:12px; background:#e74c3c; margin:0;">Sign Out</button>
+                </div>
             </div>
-            <button type="submit" class="btn">Record Sales Order</button>
-          </form>
-        </div>
 
-        <div class="card">
-          <div class="card-title">Recent Orders</div>
-          <table>
-            <thead>
-              <tr><th>Order No</th><th>Customer Phone</th><th>Product</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th></tr>
-            </thead>
-            <tbody id="orders-list"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- INVENTORY & DISPATCH TAB -->
-      <div id="inventory-tab" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="card-title">Stock Transfer (Accra &lt;&gt; Tema)</div>
-          <form onsubmit="transferStock(event)">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
-              <div class="form-group">
-                <label>Product Line</label>
-                <select id="tr-product">
-                  <option value="Sinotruck">Sinotruck</option>
-                  <option value="Shacman">Shacman</option>
-                  <option value="Howo">Howo</option>
-                  <option value="FAW">FAW</option>
-                  <option value="Dongfeng">Dongfeng</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Quantity</label>
-                <input type="number" id="tr-qty" min="1" value="1" required />
-              </div>
-              <div class="form-group">
-                <label>From Branch</label>
-                <select id="tr-from"><option value="accra">Accra Warehouse</option><option value="tema">Tema Warehouse</option></select>
-              </div>
-              <div class="form-group">
-                <label>To Branch</label>
-                <select id="tr-to"><option value="tema">Tema Warehouse</option><option value="accra">Accra Warehouse</option></select>
-              </div>
+            <!-- DISPATCHER / SUPERVISOR BROADCAST PANEL -->
+            <div id="dispatcherPanel" class="dispatcher-box">
+                <div class="dispatcher-header">
+                    <span class="dispatcher-title">📢 Supervisor Communication Console</span>
+                    <span style="font-size:11px; background:#0284c7; padding:2px 8px; border-radius:10px;">Dispatch Operations</span>
+                </div>
+                <p style="font-size:12px; color:#94a3b8; margin-top:0; margin-bottom:12px;">Send real-time alerts or direct messages to specific staff roles across the system.</p>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div>
+                        <label style="color:#cbd5e1; font-size:12px;">Target Recipient Staff:</label>
+                        <select id="dispatchTarget" style="background:#1e293b; color:white; border-color:#475569;">
+                            <option value="CASHIER">Cashiers</option>
+                            <option value="DISPATCHER">Warehouse / Dispatchers</option>
+                            <option value="ALL">All Staff Members (Company Broadcast)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color:#cbd5e1; font-size:12px;">Alert Priority Level:</label>
+                        <select id="dispatchPriority" style="background:#1e293b; color:white; border-color:#475569;">
+                            <option value="INFO">Normal Direct Message</option>
+                            <option value="URGENT">⚠️ URGENT DIRECTIVE</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label style="color:#cbd5e1; font-size:12px;">Message Subject / Title:</label>
+                    <input type="text" id="dispatchTitle" placeholder="e.g. Special Price Approval" style="background:#1e293b; color:white; border-color:#475569;">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="color:#cbd5e1; font-size:12px;">Message Instructions:</label>
+                    <textarea id="dispatchBody" rows="2" placeholder="Type instructions or updates..." style="background:#1e293b; color:white; border-color:#475569; resize:none;"></textarea>
+                </div>
+                <button type="button" onclick="sendDispatcherBroadcast()" style="background:#0284c7; font-size:13px; padding:10px; margin-top:0;">
+                    🚀 Broadcast Alert to Staff Panel
+                </button>
+                <div id="dispatchSuccess" style="display:none; margin-top:8px; font-size:12px; color:#4ade80; text-align:center; font-weight:bold;">
+                    ✅ Alert dispatched successfully!
+                </div>
             </div>
-            <button type="submit" class="btn">Execute Transfer</button>
-          </form>
+
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs" id="mainNavTabs">
+                <button class="tab-btn role-tab gm cashier" id="btnOrderTab" onclick="switchTab('orders')">
+                    🛒 Orders & Register
+                    <span id="tabBadgeSales" class="tab-badge" style="display:none;">0</span>
+                </button>
+                <button class="tab-btn role-tab gm cashier" id="btnLookupTab" onclick="switchTab('lookup')">🔍 Customer Lookup</button>
+                <button class="tab-btn role-tab gm dispatcher" id="btnTransferTab" onclick="switchTab('transfers')">
+                    📦 Inventory & Transfers
+                    <span id="tabBadgeWH" class="tab-badge" style="display:none;">0</span>
+                </button>
+                <button class="tab-btn role-tab customer" id="btnPortalTab" onclick="switchTab('portal')">👤 My Customer Portal</button>
+                <button class="tab-btn role-tab gm" id="btnDashTab" onclick="switchTab('dashboard')">📊 Manager Overview</button>
+            </div>
+
+            <!-- TAB 1: ORDERS & SALES PANEL -->
+            <div id="orderSection" class="tab-section" style="display:none;">
+                <div id="salesDMPanel" class="dm-box">
+                    <div class="dm-title">
+                        <span>💬 Direct Messages & Management Directives</span>
+                        <span id="salesDMCount" style="background:#4338ca; color:white; border-radius:10px; padding:1px 6px; font-size:10px;">0 New</span>
+                    </div>
+                    <div id="salesDMList"></div>
+                </div>
+
+                <p class="sub-text">Record New Order or Register New Customer Profile</p>
+                <div class="lookup-box" style="background:#f0f4f8; border-color:#2980b9;">
+                    <div class="lookup-title" style="color:#2980b9;">➕ Quick Register Customer</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
+                        <input type="text" id="newCustName" placeholder="Customer Full Name">
+                        <input type="text" id="newCustPhone" placeholder="Phone (e.g. 0240000000)">
+                    </div>
+                    <button type="button" class="btn-add-cust" onclick="registerNewCustomer()">Save Profile to Database</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Customer Profile (Or Walk-In)</label>
+                    <select id="customerSelect" onchange="checkCustomerCreditStatus()">
+                        <option value="Walk-in Customer|0000000000">Walk-in Customer</option>
+                    </select>
+                    <div id="creditWarning" class="debt-alert has-debt" style="display:none; margin-top:5px;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Product / Category</label>
+                    <select id="product" onchange="updateProductPrice()">
+                        <option value="450000" data-name="Sinotruck">Sinotruck - GH₵ 450,000</option>
+                        <option value="420000" data-name="Shacman Truck">Shacman Truck - GH₵ 420,000</option>
+                        <option value="400000" data-name="Howo Truck">Howo Truck - GH₵ 400,000</option>
+                        <option value="380000" data-name="FAW Heavy Truck">FAW Heavy Truck - GH₵ 380,000</option>
+                        <option value="390000" data-name="Dongfeng Truck">Dongfeng Truck - GH₵ 390,000</option>
+                        <option value="1500" data-name="Triangle Tyre 315/80R22.5">Triangle Tyre 315/80R22.5 - GH₵ 1,500</option>
+                        <option value="250" data-name="General Spare Parts Kit">General Spare Parts Kit - GH₵ 250</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        Total Price (GH₵) 
+                        <span id="pricePermission" class="permission-badge badge-locked">LOCKED FOR CASHIERS</span>
+                    </label>
+                    <input type="number" id="totalPrice" value="450000" disabled oninput="calculateBalance()">
+                </div>
+                
+                <div class="form-group">
+                    <label>Amount Paid Down (GH₵)</label>
+                    <input type="number" id="amountPaid" value="450000" oninput="calculateBalance()">
+                </div>
+
+                <div class="summary">
+                    <p>Remaining Balance: <span id="balanceText" style="color: #27ae60;">GH₵ 0.00</span></p>
+                    <p>Payment Status: <span id="statusBadge" class="badge badge-paid">PAID IN FULL</span></p>
+                </div>
+
+                <button id="btnReceipt" onclick="generateReceipt()">Generate Official Receipt & Post Order</button>
+            </div>
+
+            <!-- TAB 2: CUSTOMER LOOKUP -->
+            <div id="lookupSection" class="tab-section" style="display: none;">
+                <p class="sub-text">Search Customer Database, Outstanding Balances & Previous Orders</p>
+                <div class="lookup-box">
+                    <div class="lookup-title">🔍 Search Customer Profile</div>
+                    <div class="lookup-row">
+                        <input type="text" id="searchQuery" placeholder="Enter Phone Number or Full Name" oninput="handleSearchAutocomplete(event)" autocomplete="off">
+                        <button type="button" class="btn-search" onclick="searchCustomerDatabase()">Search</button>
+                    </div>
+                    <!-- Autocomplete Suggestions Container -->
+                    <div id="searchSuggestions" class="autocomplete-suggestions" style="display:none;"></div>
+                    
+                    <div id="lookupDebtAlert" class="debt-alert"></div>
+                    <div id="payDebtBox" class="action-box">
+                        <label style="font-size:12px; margin-bottom:3px; font-weight:bold;">Record Debt Top-Up / Balance Payment (GH₵):</label>
+                        <div style="display:flex; gap:10px;">
+                            <input type="number" id="debtPaymentAmount" placeholder="Amount paying today">
+                            <button class="btn-pay" onclick="processDebtPayment()">Pay Balance</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="custHistoryBox" style="display:none; margin-top:15px;">
+                    <label style="font-size:14px; font-weight:bold;">Order History & Statements</label>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item Purchased</th>
+                                <th>Total (GH₵)</th>
+                                <th>Paid (GH₵)</th>
+                                <th>Balance (GH₵)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="custHistoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: INVENTORY & TRANSFERS -->
+            <div id="transferSection" class="tab-section" style="display: none;">
+                <div class="dm-box" style="background:#fef3c7; border-color:#fde68a;">
+                    <div class="dm-title" style="color:#92400e;">
+                        <span>📦 Warehouse Movement & Dispatch Alerts</span>
+                        <span id="whDMCount" style="background:#b45309; color:white; border-radius:10px; padding:1px 6px; font-size:10px;">0 New</span>
+                    </div>
+                    <div id="whAlertList"></div>
+                </div>
+
+                <p class="sub-text">Transfer Products Between Warehouses & Branches</p>
+                <div class="form-group">
+                    <label>Select Product Category to Transfer</label>
+                    <select id="transferProduct">
+                        <option value="Sinotruck">Sinotruck</option>
+                        <option value="Shacman Truck">Shacman Truck</option>
+                        <option value="Howo Truck">Howo Truck</option>
+                        <option value="Triangle Tyre 315/80R22.5">Triangle Tyre 315/80R22.5</option>
+                        <option value="General Spare Parts Kit">General Spare Parts Kit</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Source Branch (Sending)</label>
+                    <select id="sourceBranch">
+                        <option value="accra">Accra Main Warehouse</option>
+                        <option value="tema">Tema Warehouse</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Branch (Receiving)</label>
+                    <select id="targetBranch">
+                        <option value="tema">Tema Branch Shop</option>
+                        <option value="accra">Accra Main Warehouse</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity to Transfer</label>
+                    <input type="number" id="transferQty" value="1" min="1">
+                </div>
+                <button type="button" onclick="executeTransfer()" style="background-color: #27ae60;">Process Stock Transfer</button>
+                <div id="transferAlert" class="debt-alert"></div>
+                
+                <div style="margin-top:25px;">
+                    <label style="font-size:14px; font-weight:bold;">Live Warehouse Inventory</label>
+                    <table class="dash-table">
+                        <thead>
+                            <tr><th>Product Line</th><th>Accra Quantity</th><th>Tema Quantity</th></tr>
+                        </thead>
+                        <tbody id="inventoryTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: CUSTOMER PORTAL -->
+            <div id="portalSection" class="tab-section" style="display: none;">
+                <p class="sub-text">Personal Customer Portal & Account Statement</p>
+                <div id="portalView">
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ebf5fb; padding:15px; border-radius:6px; border:1px solid #aed6f1; margin-bottom:15px;">
+                        <div>
+                            <h4 style="margin:0; color:#1b4f72;" id="portalCustName">Welcome Customer</h4>
+                            <span style="font-size:12px; color:#555;" id="portalCustPhone"></span>
+                        </div>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="card" style="grid-column: span 2;">
+                            <div class="card-lbl">Current Outstanding Balance Due</div>
+                            <div class="card-val" id="portalDebt" style="color:#c0392b; font-size:24px;">GH₵ 0.00</div>
+                        </div>
+                    </div>
+                    <label style="margin-top:10px; font-size:13px; font-weight:bold;">Your Pending Orders & Purchase History</label>
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item Purchased</th>
+                                <th>Total Cost</th>
+                                <th>Amount Paid</th>
+                                <th>Balance Due</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portalHistoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 5: MANAGER OVERVIEW -->
+            <div id="dashSection" class="tab-section" style="display: none;">
+                <p class="sub-text">Real-time Business Financial Performance & Master Control</p>
+                <div class="metrics-grid">
+                    <div class="card">
+                        <div class="card-lbl">Total Cash Collected</div>
+                        <div class="card-val" id="dashCollected" style="color:#27ae60;">GH₵ 0.00</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-lbl">Total Debt Outstanding</div>
+                        <div class="card-val" id="dashDebt" style="color:#c0392b;">GH₵ 0.00</div>
+                    </div>
+                </div>
+                <label style="margin-top:10px; font-weight:bold; font-size:14px;">Branch Stock Overview (<span style="color:#c0392b;">Red</span> = Low Stock Alert)</label>
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Product Item</th>
+                            <th>Accra Stock</th>
+                            <th>Tema Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashStockBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Interactive Demo Simulator Bar -->
+            <div class="sim-bar">
+                <div><strong>⚡ Quick Staff Alert Simulator:</strong></div>
+                <div style="display:flex; gap:6px;">
+                    <button class="sim-btn" onclick="triggerSimulatedAlert('CASHIER', '💬 Direct Message', 'Manager: Price discount approved for client.', 'INFO')">Msg Cashier</button>
+                    <button class="sim-btn" onclick="triggerSimulatedAlert('DISPATCHER', '🚚 Stock Alert', 'Container #BP-882 arriving at Tema Warehouse.', 'URGENT')" style="background:#b45309;">Alert Dispatcher</button>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-          <div class="card-title">Current Warehouse Inventory</div>
-          <table>
-            <thead><tr><th>Product Line</th><th>Accra Quantity</th><th>Tema Quantity</th></tr></thead>
-            <tbody id="inventory-list"></tbody>
-          </table>
+        <!-- Printable Receipt Area -->
+        <div id="receiptArea">
+            <div class="receipt-header">
+                <h3 style="margin:0;">BAIDOO PRIME LTD</h3>
+                <p style="margin:2px 0; font-size:12px;">Tyres, Heavy Duty Trucks & Spare Parts</p>
+                <p style="margin:2px 0; font-size:11px;" id="rDate"></p>
+                <p style="margin:2px 0; font-size:11px;">Receipt No: <strong id="rOrderNo">BP-2026-00001</strong></p>
+                <p style="margin:2px 0; font-size:11px;">Issued By: <strong id="rStaffRole"></strong></p>
+            </div>
+            <div class="receipt-row"><span>Customer:</span> <strong id="rCustomer"></strong></div>
+            <div class="receipt-row"><span>Item/Reason:</span> <strong id="rItem"></strong></div>
+            <hr style="border:0; border-top: 1px dashed #ccc;">
+            <div class="receipt-row"><span>Total Amount:</span> <span id="rTotal"></span></div>
+            <div class="receipt-row"><span>Amount Paid:</span> <span id="rPaid"></span></div>
+            <div class="receipt-row" style="font-weight:bold;"><span>Balance Due:</span> <span id="rBalance"></span></div>
+            <div class="receipt-row"><span>Status:</span> <strong id="rStatus"></strong></div>
+            <div class="receipt-footer">
+                <p>Thank you for choosing Baidoo Prime!</p>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="no-print" onclick="window.print()" style="background:#27ae60;">🖨️ Print Receipt</button>
+                    <button class="no-print" onclick="shareWhatsAppReceipt()" style="background:#25D366;">📱 Share via WhatsApp</button>
+                </div>
+            </div>
         </div>
-      </div>
+    </div>
+</div>
 
-      <!-- REASON 2: MESSAGES TAB WITH DELETE OPTIONS -->
-      <div id="messages-tab" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="card-title">
-            <span>Notifications & Messages</span>
-            <button class="btn btn-danger btn-sm" onclick="clearAllReadMessages()">Clear All Read Messages</button>
-          </div>
-          <table>
-            <thead><tr><th>Date</th><th>Notification</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="messages-list"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- REASON 5: CUSTOMER PERSONAL PORTAL TAB -->
-      <div id="customer-tab" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="card-title">My Account Summary</div>
-          <div style="font-size: 16px; margin-bottom: 10px;">
-            <strong>Outstanding Debt Balance:</strong> <span id="cust-debt-display" style="color: #e74c3c; font-weight: 700;">GHS 0.00</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">My Orders & Status</div>
-          <table>
-            <thead><tr><th>Order No</th><th>Product</th><th>Total Cost</th><th>Amount Paid</th><th>Balance Due</th><th>Status</th></tr></thead>
-            <tbody id="cust-orders-list"></tbody>
-          </table>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <script>
+<script>
     let currentUser = null;
+    let totalCashCollected = 0.00;
+    let lastReceiptData = null;
+    let alertSystem = [
+        { id: 1, roleTarget: 'CASHIER', title: '💬 Direct Message', text: 'GM: System initialized and ready for production operations.', priority: 'INFO', time: '10:15 AM', isRead: false },
+        { id: 2, roleTarget: 'DISPATCHER', title: '📦 Transfer Alert', text: 'Warehouse staging ready for daily inventory movements.', priority: 'URGENT', time: '11:30 AM', isRead: false }
+    ];
+    let customerDatabase = {};
+    let activeCustomerPhone = null;
+    let stockLevels = {
+        "Sinotruck": { accra: 10, tema: 2 },
+        "Shacman Truck": { accra: 6, tema: 1 },
+        "Howo Truck": { accra: 4, tema: 3 },
+        "Triangle Tyre 315/80R22.5": { accra: 45, tema: 3 },
+        "General Spare Parts Kit": { accra: 120, tema: 15 }
+    };
 
-    // REASON 3: DYNAMIC GREETING ON LANDING
     window.onload = function() {
-      const hour = new Date().getHours();
-      let greeting = "Good Day";
-      if (hour < 12) greeting = "Good Morning";
-      else if (hour < 17) greeting = "Good Afternoon";
-      else greeting = "Good Evening";
-
-      document.getElementById('greeting-header').innerText = `${greeting}! Welcome to Baidoo Prime`;
+        const hour = new Date().getHours();
+        let greeting = "Good Day";
+        if (hour < 12) greeting = "Good Morning";
+        else if (hour < 17) greeting = "Good Afternoon";
+        else greeting = "Good Evening";
+        document.getElementById('greeting-header').innerText = `${greeting}! Welcome to Baidoo Prime`;
+        loadDataFromSQLite();
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#searchQuery') && !e.target.closest('#searchSuggestions')) {
+                document.getElementById('searchSuggestions').style.display = 'none';
+            }
+        });
     };
 
     function toggleAuthFields() {
-      const role = document.getElementById('login-role').value;
-      const userField = document.getElementById('login-user');
-      userField.placeholder = role === 'customer' ? "Phone Number" : "Username";
+        const role = document.getElementById('login-role').value;
+        const userField = document.getElementById('login-user');
+        if (role === 'CUSTOMER') {
+            userField.placeholder = "Registered Phone Number";
+        } else {
+            userField.placeholder = "Username / Staff ID";
+        }
     }
 
     function toggleAuthView(view) {
-      if (view === 'register') {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('register-form').style.display = 'block';
-      } else {
-        document.getElementById('register-form').style.display = 'none';
-        document.getElementById('login-form').style.display = 'block';
-      }
+        if (view === 'register') {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        } else {
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
     }
 
     async function handleLogin(e) {
-      e.preventDefault();
-      const role = document.getElementById('login-role').value;
-      const username = document.getElementById('login-user').value;
-      const password = document.getElementById('login-pass').value;
-
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role, username, password })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          currentUser = data;
-          setupWorkspace();
-        } else {
-          alert('Invalid login credentials');
+        e.preventDefault();
+        const role = document.getElementById('login-role').value;
+        const user = document.getElementById('login-user').value.trim();
+        const pass = document.getElementById('login-pass').value.trim();
+        
+        if (role === 'CUSTOMER') {
+            let cust = customerDatabase[user];
+            if (cust) {
+                currentUser = { name: cust.name, role: 'CUSTOMER', phone: cust.phone };
+                setupWorkspace();
+                return;
+            } else {
+                alert('Customer account not found. Please register first.');
+                return;
+            }
         }
-      } catch (err) {
-        alert('Server login error. Please try again.');
-      }
+        
+        currentUser = { name: role.replace('_', ' '), role: role, phone: user };
+        setupWorkspace();
     }
 
-    // REASON 5: CUSTOMER SELF-REGISTRATION
     async function handleRegister(e) {
-      e.preventDefault();
-      const name = document.getElementById('reg-name').value;
-      const phone = document.getElementById('reg-phone').value;
-      const password = document.getElementById('reg-pass').value;
-
-      try {
-        const res = await fetch('/api/customers/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, phone, password })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('Registration successful! Please login with your phone number.');
-          toggleAuthView('login');
-        } else {
-          alert(data.message || 'Registration failed.');
-        }
-      } catch (err) {
-        alert('Error registering account.');
-      }
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+        const password = document.getElementById('reg-pass').value.trim();
+        
+        customerDatabase[phone] = { name: name, phone: phone, password: password, outstandingDebt: 0.00, orders: [] };
+        alert('✅ Registration successful! Please sign in with your phone number.');
+        populateCustomerDropdown();
+        toggleAuthView('login');
     }
 
     function setupWorkspace() {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('app-workspace').style.display = 'block';
-      document.getElementById('user-display').innerText = `Role: ${currentUser.name}`;
-
-      // Hide all nav links initially
-      document.querySelectorAll('.nav-item').forEach(el => el.style.display = 'none');
-
-      // REASON 1: LOCK AMOUNT PAID FOR NON-GM ROLES
-      const paidInput = document.getElementById('ord-paid');
-      if (currentUser.role !== 'gm') {
-        paidInput.setAttribute('readonly', 'readonly');
-      } else {
-        paidInput.removeAttribute('readonly');
-      }
-
-      // REASON 3: ISOLATE WORKSPACE PER ROLE
-      if (currentUser.role === 'gm') {
-        document.querySelectorAll('.gm').forEach(el => el.style.display = 'inline-block');
-        showTab('gm-tab');
-      } else if (currentUser.role === 'cashier') {
-        document.querySelectorAll('.cashier').forEach(el => el.style.display = 'inline-block');
-        showTab('orders-tab');
-      } else if (currentUser.role === 'dispatcher') {
-        document.querySelectorAll('.dispatcher').forEach(el => el.style.display = 'inline-block');
-        showTab('inventory-tab');
-      } else if (currentUser.role === 'customer') {
-        document.querySelectorAll('.customer').forEach(el => el.style.display = 'inline-block');
-        showTab('customer-tab');
-        loadCustomerPortal();
-      }
-    }
-
-    function showTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-      
-      const selectedTab = document.getElementById(tabId);
-      if (selectedTab) selectedTab.style.display = 'block';
-
-      if (tabId === 'orders-tab') loadOrders();
-      if (tabId === 'inventory-tab') loadInventory();
-      if (tabId === 'messages-tab') loadMessages();
-    }
-
-    function calculateBalance() {
-      const total = parseFloat(document.getElementById('ord-total').value) || 0;
-      let paid = parseFloat(document.getElementById('ord-paid').value) || 0;
-      if (currentUser.role !== 'gm') {
-        paid = total; 
-        document.getElementById('ord-paid').value = total;
-      }
-      document.getElementById('ord-balance').value = (total - paid).toFixed(2);
-    }
-
-    async function loadOrders() {
-      const res = await fetch('/api/orders');
-      const orders = await res.json();
-      const list = document.getElementById('orders-list');
-      list.innerHTML = orders.map(o => `
-        <tr>
-          <td>${o.orderNo}</td>
-          <td>${o.customerPhone}</td>
-          <td>${o.itemName}</td>
-          <td>GHS ${o.total.toFixed(2)}</td>
-          <td>GHS ${o.paid.toFixed(2)}</td>
-          <td>GHS ${o.balance.toFixed(2)}</td>
-          <td><span class="status-badge ${o.status === 'Completed' ? 'status-completed' : 'status-pending'}">${o.status}</span></td>
-        </tr>
-      `).join('');
-    }
-
-    async function createOrder(e) {
-      e.preventDefault();
-      const orderData = {
-        orderNo: document.getElementById('ord-no').value,
-        customerPhone: document.getElementById('ord-phone').value,
-        itemName: document.getElementById('ord-product').value,
-        total: parseFloat(document.getElementById('ord-total').value),
-        paid: parseFloat(document.getElementById('ord-paid').value) || 0,
-        balance: parseFloat(document.getElementById('ord-balance').value) || 0,
-        status: 'Pending',
-        role: currentUser.role
-      };
-
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert('Order created successfully!');
-        loadOrders();
-      }
-    }
-
-    async function loadInventory() {
-      const res = await fetch('/api/inventory');
-      const items = await res.json();
-      document.getElementById('inventory-list').innerHTML = items.map(i => `
-        <tr>
-          <td>${i.productName}</td>
-          <td>${i.accraQty} units</td>
-          <td>${i.temaQty} units</td>
-        </tr>
-      `).join('');
-    }
-
-    async function transferStock(e) {
-      e.preventDefault();
-      const payload = {
-        productName: document.getElementById('tr-product').value,
-        qty: parseInt(document.getElementById('tr-qty').value),
-        fromLocation: document.getElementById('tr-from').value,
-        toLocation: document.getElementById('tr-to').value
-      };
-
-      const res = await fetch('/api/inventory/transfer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert('Stock transferred successfully!');
-        loadInventory();
-      }
-    }
-
-    // REASON 2: MESSAGES & DELETE FUNCTIONALITY
-    async function loadMessages() {
-      const res = await fetch('/api/messages');
-      const msgs = await res.json();
-      document.getElementById('messages-list').innerHTML = msgs.map(m => `
-        <tr>
-          <td>${new Date(m.createdAt).toLocaleDateString()}</td>
-          <td>${m.content || m.title}</td>
-          <td>${m.status}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="deleteMessage(${m.id})">Delete</button></td>
-        </tr>
-      `).join('');
-    }
-
-    async function deleteMessage(id) {
-      await fetch(`/api/messages/${id}`, { method: 'DELETE' });
-      loadMessages();
-    }
-
-    async function clearAllReadMessages() {
-      await fetch('/api/messages/clear-all', { method: 'DELETE' });
-      loadMessages();
-    }
-
-    // REASON 5: ISOLATED CUSTOMER DATA PORTAL
-    async function loadCustomerPortal() {
-      const res = await fetch(`/api/customers/portal/${currentUser.phone}`);
-      const data = await res.json();
-
-      if (data.customer) {
-        document.getElementById('cust-debt-display').innerText = `GHS ${data.customer.outstandingDebt.toFixed(2)}`;
-      }
-
-      document.getElementById('cust-orders-list').innerHTML = data.orders.map(o => `
-        <tr>
-          <td>${o.orderNo}</td>
-          <td>${o.itemName}</td>
-          <td>GHS ${o.total.toFixed(2)}</td>
-          <td>GHS ${o.paid.toFixed(2)}</td>
-          <td>GHS ${o.balance.toFixed(2)}</td>
-          <td><span class="status-badge ${o.status === 'Completed' ? 'status-completed' : 'status-pending'}">${o.status}</span></td>
-        </tr>
-      `).join('');
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('app-workspace').style.display = 'block';
+        document.getElementById('userBadge').innerText = `Logged as: ${currentUser.name} (${currentUser.role.replace('_', ' ')})`;
+        
+        document.querySelectorAll('.role-tab').forEach(el => el.style.display = 'none');
+        document.getElementById('dispatcherPanel').style.display = 'none';
+        
+        let priceInput = document.getElementById('totalPrice');
+        let paidInput = document.getElementById('amountPaid');
+        let priceBadge = document.getElementById('pricePermission');
+        
+        if (currentUser.role === 'GENERAL_MANAGER') {
+            document.querySelectorAll('.gm').forEach(el => el.style.display = 'inline-block');
+            document.getElementById('dispatcherPanel').style.display = 'block';
+            priceInput.disabled = false;
+            paidInput.disabled = false;
+            priceBadge.innerText = 'EDITABLE (GM ACCESS)';
+            priceBadge.className = 'permission-badge badge-unlocked';
+            switchTab('dashboard');
+        } else if (currentUser.role === 'CASHIER') {
+            document.querySelectorAll('.cashier').forEach(el => el.style.display = 'inline-block');
+            priceInput.disabled = true;
+            paidInput.disabled = false;
+            priceBadge.innerText = 'LOCKED FOR CASHIERS';
+            priceBadge.className = 'permission-badge badge-locked';
+            switchTab('orders');
+        } else if (currentUser.role === 'DISPATCHER') {
+            document.querySelectorAll('.dispatcher').forEach(el => el.style.display = 'inline-block');
+            document.getElementById('dispatcherPanel').style.display = 'block';
+            switchTab('transfers');
+        } else if (currentUser.role === 'CUSTOMER') {
+            document.querySelectorAll('.customer').forEach(el => el.style.display = 'inline-block');
+            switchTab('portal');
+            loadCustomerPortal();
+        }
+        refreshNotificationUI();
     }
 
     function handleLogout() {
-      currentUser = null;
-      document.getElementById('app-workspace').style.display = 'none';
-      document.getElementById('auth-screen').style.display = 'flex';
+        currentUser = null;
+        document.getElementById('app-workspace').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
     }
-  </script>
+
+    function switchTab(tab) {
+        let sections = ['orderSection', 'lookupSection', 'transferSection', 'portalSection', 'dashSection'];
+        let btns = ['btnOrderTab', 'btnLookupTab', 'btnTransferTab', 'btnPortalTab', 'btnDashTab'];
+        
+        sections.forEach(s => document.getElementById(s).style.display = 'none');
+        btns.forEach(b => {
+            let el = document.getElementById(b);
+            if (el) el.classList.remove('active');
+        });
+        
+        if (tab === 'orders') {
+            document.getElementById('orderSection').style.display = 'block';
+            document.getElementById('btnOrderTab').classList.add('active');
+        } else if (tab === 'lookup') {
+            document.getElementById('lookupSection').style.display = 'block';
+            document.getElementById('btnLookupTab').classList.add('active');
+        } else if (tab === 'transfers') {
+            document.getElementById('transferSection').style.display = 'block';
+            document.getElementById('btnTransferTab').classList.add('active');
+            refreshInventoryTable();
+        } else if (tab === 'portal') {
+            document.getElementById('portalSection').style.display = 'block';
+            document.getElementById('btnPortalTab').classList.add('active');
+            loadCustomerPortal();
+        } else if (tab === 'dashboard') {
+            document.getElementById('dashSection').style.display = 'block';
+            document.getElementById('btnDashTab').classList.add('active');
+            refreshDashboard();
+        }
+    }
+
+    async function loadDataFromSQLite() {
+        populateCustomerDropdown();
+    }
+
+    function populateCustomerDropdown() {
+        let select = document.getElementById('customerSelect');
+        if (!select) return;
+        select.innerHTML = '<option value="Walk-in Customer|0000000000">Walk-in Customer</option>';
+        for (let phone in customerDatabase) {
+            let cust = customerDatabase[phone];
+            select.innerHTML += `<option value="${cust.name}|${cust.phone}">${cust.name} (${cust.phone})</option>`;
+        }
+    }
+
+    function checkCustomerCreditStatus() {
+        let val = document.getElementById('customerSelect').value;
+        let parts = val.split('|');
+        let phone = parts[1];
+        let warningBox = document.getElementById('creditWarning');
+        if (customerDatabase[phone] && customerDatabase[phone].outstandingDebt > 1000) {
+            warningBox.style.display = 'block';
+            warningBox.innerHTML = `⚠️ <strong>HIGH DEBT WARNING:</strong> ${customerDatabase[phone].name} owes <strong>GH₵ ${customerDatabase[phone].outstandingDebt.toLocaleString()}</strong>. GM Approval Recommended.`;
+        } else {
+            warningBox.style.display = 'none';
+        }
+    }
+
+    function updateProductPrice() {
+        let select = document.getElementById('product');
+        let val = select.value;
+        document.getElementById('totalPrice').value = val;
+        document.getElementById('amountPaid').value = val;
+        calculateBalance();
+    }
+
+    function calculateBalance() {
+        let total = parseFloat(document.getElementById('totalPrice').value) || 0;
+        let paid = parseFloat(document.getElementById('amountPaid').value) || 0;
+        let balance = Math.max(0, total - paid);
+        
+        document.getElementById('balanceText').innerText = 'GH₵ ' + balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        let badgeElem = document.getElementById('statusBadge');
+        if (paid <= 0) {
+            badgeElem.innerText = 'PENDING';
+            badgeElem.className = 'badge badge-pending';
+        } else if (balance > 0) {
+            badgeElem.innerText = 'PARTIAL';
+            badgeElem.className = 'badge badge-partial';
+        } else {
+            badgeElem.innerText = 'PAID IN FULL';
+            badgeElem.className = 'badge badge-paid';
+        }
+    }
+
+    function generateReceipt() {
+        let selectCust = document.getElementById('customerSelect').value.split('|');
+        let customerName = selectCust[0];
+        let phone = selectCust[1];
+        let select = document.getElementById('product');
+        let itemName = select.options[select.selectedIndex].getAttribute('data-name');
+        let total = parseFloat(document.getElementById('totalPrice').value) || 0;
+        let paid = parseFloat(document.getElementById('amountPaid').value) || 0;
+        let balance = Math.max(0, total - paid);
+        totalCashCollected += paid;
+        let status = paid <= 0 ? 'PENDING' : (balance > 0 ? 'PARTIAL' : 'PAID IN FULL');
+        
+        lastReceiptData = {
+            date: new Date().toLocaleString(),
+            role: currentUser.name,
+            customerName: customerName,
+            phone: phone,
+            item: itemName,
+            total: total,
+            paid: paid,
+            balance: balance,
+            status: status
+        };
+        if (customerDatabase[phone]) {
+            customerDatabase[phone].outstandingDebt += balance;
+            customerDatabase[phone].orders.push({
+                date: new Date().toISOString().split('T')[0],
+                item: itemName,
+                total: total,
+                paid: paid,
+                balance: balance,
+                status: status
+            });
+        }
+        renderReceiptUI();
+        checkCustomerCreditStatus();
+    }
+
+    function renderReceiptUI() {
+        if (!lastReceiptData) return;
+        document.getElementById('rDate').innerText = 'Date: ' + lastReceiptData.date;
+        document.getElementById('rStaffRole').innerText = lastReceiptData.role;
+        document.getElementById('rCustomer').innerText = lastReceiptData.customerName;
+        document.getElementById('rItem').innerText = lastReceiptData.item;
+        document.getElementById('rTotal').innerText = 'GH₵ ' + lastReceiptData.total.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('rPaid').innerText = 'GH₵ ' + lastReceiptData.paid.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('rBalance').innerText = 'GH₵ ' + lastReceiptData.balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('rStatus').innerText = lastReceiptData.status;
+        document.getElementById('receiptArea').style.display = 'block';
+    }
+
+    function shareWhatsAppReceipt() {
+        if (!lastReceiptData) return;
+        let msg = `*BAIDOO PRIME LTD - RECEIPT*%0A` +
+            `--------------------------------%0A` +
+            `*Customer:* ${lastReceiptData.customerName}%0A` +
+            `*Item:* ${lastReceiptData.item}%0A` +
+            `*Total Price:* GH₵ ${lastReceiptData.total.toLocaleString()}%0A` +
+            `*Amount Paid:* GH₵ ${lastReceiptData.paid.toLocaleString()}%0A` +
+            `*Balance Due:* GH₵ ${lastReceiptData.balance.toLocaleString()}%0A` +
+            `*Status:* ${lastReceiptData.status}%0A` +
+            `--------------------------------%0A` +
+            `Thank you for doing business with us!`;
+        let formattedPhone = lastReceiptData.phone.replace(/[^0-9]/g, '');
+        if (formattedPhone.startsWith('0')) formattedPhone = '233' + formattedPhone.substring(1);
+        window.open(`https://wa.me/${formattedPhone}?text=${msg}`, '_blank');
+    }
+
+    function registerNewCustomer() {
+        let name = document.getElementById('newCustName').value.trim();
+        let phone = document.getElementById('newCustPhone').value.trim();
+        if (!name || !phone) {
+            alert('Please provide Full Name and Phone Number.');
+            return;
+        }
+        customerDatabase[phone] = { name: name, phone: phone, outstandingDebt: 0.00, orders: [] };
+        alert('✅ Customer Profile successfully created!');
+        populateCustomerDropdown();
+        document.getElementById('customerSelect').value = `${name}|${phone}`;
+        document.getElementById('newCustName').value = '';
+        document.getElementById('newCustPhone').value = '';
+    }
+
+    function handleSearchAutocomplete(e) {
+        let query = e.target.value.trim().toLowerCase();
+        let suggestionsBox = document.getElementById('searchSuggestions');
+        suggestionsBox.innerHTML = '';
+        
+        if (!query) {
+            suggestionsBox.style.display = 'none';
+            return;
+        }
+        let matches = [];
+        for (let phone in customerDatabase) {
+            let cust = customerDatabase[phone];
+            if (phone.includes(query) || cust.name.toLowerCase().includes(query)) {
+                matches.push(cust);
+            }
+        }
+        if (matches.length > 0) {
+            suggestionsBox.style.display = 'block';
+            matches.forEach(cust => {
+                let div = document.createElement('div');
+                div.className = 'autocomplete-suggestion';
+                div.innerHTML = `<strong>${cust.name}</strong> (${cust.phone}) — Debt: GH₵ ${cust.outstandingDebt.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                div.onclick = function() {
+                    document.getElementById('searchQuery').value = cust.phone;
+                    suggestionsBox.style.display = 'none';
+                    searchCustomerDatabase();
+                };
+                suggestionsBox.appendChild(div);
+            });
+        } else {
+            suggestionsBox.style.display = 'none';
+        }
+    }
+
+    function searchCustomerDatabase() {
+        let query = document.getElementById('searchQuery').value.trim();
+        let cust = customerDatabase[query];
+        if (!cust) {
+            for (let p in customerDatabase) {
+                if (customerDatabase[p].name.toLowerCase() === query.toLowerCase()) {
+                    cust = customerDatabase[p];
+                    break;
+                }
+            }
+        }
+        
+        let alertBox = document.getElementById('lookupDebtAlert');
+        let payBox = document.getElementById('payDebtBox');
+        let historyBox = document.getElementById('custHistoryBox');
+        
+        if (cust) {
+            activeCustomerPhone = cust.phone;
+            historyBox.style.display = 'block';
+            let tbody = document.getElementById('custHistoryBody');
+            tbody.innerHTML = '';
+            
+            cust.orders.forEach(ord => {
+                tbody.innerHTML += `<tr>
+                    <td>${ord.date}</td>
+                    <td>${ord.item}</td>
+                    <td>GH₵ ${ord.total.toLocaleString()}</td>
+                    <td>GH₵ ${ord.paid.toLocaleString()}</td>
+                    <td>GH₵ ${ord.balance.toLocaleString()}</td>
+                    <td><span class="badge badge-${ord.status.toLowerCase()}">${ord.status}</span></td>
+                </tr>`;
+            });
+            if (cust.outstandingDebt > 0) {
+                alertBox.style.display = 'block';
+                alertBox.className = 'debt-alert has-debt';
+                alertBox.innerHTML = `⚠️ ${cust.name} has an outstanding balance of <strong>GH₵ ${cust.outstandingDebt.toLocaleString('en-US', {minimumFractionDigits: 2})}</strong>`;
+                payBox.style.display = 'block';
+            } else {
+                alertBox.style.display = 'block';
+                alertBox.className = 'debt-alert no-debt';
+                alertBox.innerHTML = `✅ ${cust.name} has no outstanding debts. Account is clear.`;
+                payBox.style.display = 'none';
+            }
+        } else {
+            alertBox.style.display = 'block';
+            alertBox.className = 'debt-alert has-debt';
+            alertBox.innerHTML = `❌ No customer profile found matching "${query}".`;
+            historyBox.style.display = 'none';
+            payBox.style.display = 'none';
+        }
+    }
+
+    function processDebtPayment() {
+        let amt = parseFloat(document.getElementById('debtPaymentAmount').value) || 0;
+        if (amt <= 0 || !activeCustomerPhone || !customerDatabase[activeCustomerPhone]) {
+            alert('Please enter a valid payment amount.');
+            return;
+        }
+        let cust = customerDatabase[activeCustomerPhone];
+        if (amt > cust.outstandingDebt) {
+            alert('Payment amount cannot exceed total outstanding debt.');
+            return;
+        }
+        cust.outstandingDebt -= amt;
+        totalCashCollected += amt;
+        cust.orders.push({
+            date: new Date().toISOString().split('T')[0],
+            item: "Debt Settlement Payment",
+            total: amt,
+            paid: amt,
+            balance: 0,
+            status: "PAID IN FULL"
+        });
+        alert(`✅ Successfully recorded payment of GH₵ ${amt.toLocaleString()}`);
+        document.getElementById('debtPaymentAmount').value = '';
+        searchCustomerDatabase();
+    }
+
+    function executeTransfer() {
+        let prod = document.getElementById('transferProduct').value;
+        let src = document.getElementById('sourceBranch').value;
+        let tgt = document.getElementById('targetBranch').value;
+        let qty = parseInt(document.getElementById('transferQty').value) || 0;
+        let alertBox = document.getElementById('transferAlert');
+        
+        if (src === tgt) {
+            alertBox.style.display = 'block';
+            alertBox.className = 'debt-alert has-debt';
+            alertBox.innerHTML = '❌ Source and target branches cannot be the same.';
+            return;
+        }
+        if (qty <= 0) {
+            alertBox.style.display = 'block';
+            alertBox.className = 'debt-alert has-debt';
+            alertBox.innerHTML = '❌ Please specify a valid quantity to transfer.';
+            return;
+        }
+        if (stockLevels[prod][src] < qty) {
+            alertBox.style.display = 'block';
+            alertBox.className = 'debt-alert has-debt';
+            alertBox.innerHTML = `❌ Insufficient stock at ${src.toUpperCase()}. Available: ${stockLevels[prod][src]}`;
+            return;
+        }
+        
+        stockLevels[prod][src] -= qty;
+        stockLevels[prod][tgt] += qty;
+        
+        alertBox.style.display = 'block';
+        alertBox.className = 'debt-alert no-debt';
+        alertBox.innerHTML = `✅ Successfully transferred ${qty} unit(s) of ${prod} from ${src.toUpperCase()} to ${tgt.toUpperCase()}.`;
+        
+        refreshInventoryTable();
+    }
+
+    function refreshInventoryTable() {
+        let tbody = document.getElementById('inventoryTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (let prod in stockLevels) {
+            let accra = stockLevels[prod].accra;
+            let tema = stockLevels[prod].tema;
+            tbody.innerHTML += `<tr>
+                <td>${prod}</td>
+                <td class="${accra < 3 ? 'stock-low' : ''}">${accra}</td>
+                <td class="${tema < 3 ? 'stock-low' : ''}">${tema}</td>
+            </tr>`;
+        }
+    }
+
+    function loadCustomerPortal() {
+        if (!currentUser || currentUser.role !== 'CUSTOMER') return;
+        let cust = customerDatabase[currentUser.phone];
+        if (!cust) return;
+        
+        document.getElementById('portalCustName').innerText = cust.name;
+        document.getElementById('portalCustPhone').innerText = 'Phone: ' + cust.phone;
+        document.getElementById('portalDebt').innerText = 'GH₵ ' + cust.outstandingDebt.toLocaleString('en-US', {minimumFractionDigits: 2});
+        
+        let tbody = document.getElementById('portalHistoryBody');
+        tbody.innerHTML = '';
+        cust.orders.forEach(ord => {
+            tbody.innerHTML += `<tr>
+                <td>${ord.date}</td>
+                <td>${ord.item}</td>
+                <td>GH₵ ${ord.total.toLocaleString()}</td>
+                <td>GH₵ ${ord.paid.toLocaleString()}</td>
+                <td>GH₵ ${ord.balance.toLocaleString()}</td>
+                <td><span class="badge badge-${ord.status.toLowerCase()}">${ord.status}</span></td>
+            </tr>`;
+        });
+    }
+
+    function refreshDashboard() {
+        let totalDebt = 0;
+        for (let p in customerDatabase) {
+            totalDebt += customerDatabase[p].outstandingDebt;
+        }
+        document.getElementById('dashCollected').innerText = 'GH₵ ' + totalCashCollected.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('dashDebt').innerText = 'GH₵ ' + totalDebt.toLocaleString('en-US', {minimumFractionDigits: 2});
+        
+        let tbody = document.getElementById('dashStockBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (let prod in stockLevels) {
+            let accra = stockLevels[prod].accra;
+            let tema = stockLevels[prod].tema;
+            tbody.innerHTML += `<tr>
+                <td>${prod}</td>
+                <td class="${accra < 3 ? 'stock-low' : ''}">${accra} units</td>
+                <td class="${tema < 3 ? 'stock-low' : ''}">${tema} units</td>
+            </tr>`;
+        }
+    }
+
+    function toggleNotifDropdown() {
+        let dropdown = document.getElementById('notifDropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function refreshNotificationUI() {
+        let feed = document.getElementById('notifFeed');
+        let bellBadge = document.getElementById('bellBadge');
+        if (!feed) return;
+        feed.innerHTML = '';
+        
+        let unreadCount = 0;
+        alertSystem.forEach(alertObj => {
+            if (currentUser && currentUser.role !== 'CUSTOMER' && (alertObj.roleTarget === currentUser.role || alertObj.roleTarget === 'ALL')) {
+                if (!alertObj.isRead) unreadCount++;
+                let item = document.createElement('div');
+                item.className = `notif-item ${alertObj.priority === 'URGENT' ? 'urgent' : ''} ${!alertObj.isRead ? 'unread' : ''}`;
+                item.innerHTML = `<strong>${alertObj.title}</strong><br>${alertObj.text}<br><span style="font-size:10px; color:#888;">${alertObj.time}</span>`;
+                feed.appendChild(item);
+            }
+        });
+        
+        if (unreadCount > 0) {
+            bellBadge.style.display = 'inline-block';
+            bellBadge.innerText = unreadCount;
+        } else {
+            bellBadge.style.display = 'none';
+        }
+    }
+
+    function clearAllReadAlerts() {
+        alertSystem.forEach(a => a.isRead = true);
+        refreshNotificationUI();
+    }
+
+    function sendDispatcherBroadcast() {
+        let target = document.getElementById('dispatchTarget').value;
+        let priority = document.getElementById('dispatchPriority').value;
+        let title = document.getElementById('dispatchTitle').value.trim();
+        let body = document.getElementById('dispatchBody').value.trim();
+        
+        if (!title || !body) {
+            alert('Please provide a message subject and instructions.');
+            return;
+        }
+        
+        alertSystem.unshift({
+            id: Date.now(),
+            roleTarget: target,
+            title: title,
+            text: body,
+            priority: priority,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isRead: false
+        });
+        
+        document.getElementById('dispatchTitle').value = '';
+        document.getElementById('dispatchBody').value = '';
+        let successMsg = document.getElementById('dispatchSuccess');
+        successMsg.style.display = 'block';
+        setTimeout(() => successMsg.style.display = 'none', 3000);
+        refreshNotificationUI();
+    }
+
+    function triggerSimulatedAlert(role, title, text, priority) {
+        alertSystem.unshift({
+            id: Date.now(),
+            roleTarget: role,
+            title: title,
+            text: text,
+            priority: priority,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isRead: false
+        });
+        refreshNotificationUI();
+        alert(`Simulated alert sent to ${role}! Check the notification bell.`);
+    }
+</script>
 </body>
 </html>

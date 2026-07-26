@@ -2,13 +2,8 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 
-// Safely require database module if available
-let db;
-try {
-  db = require('./database');
-} catch (e) {
-  console.log('Running server with direct fallback mock database handling:', e.message);
-}
+// Import database module
+const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,147 +15,65 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static assets from public folder
+// Serve static files (HTML, CSS, JS, images) from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// 2. AUTHENTICATION & LOGIN HANDLERS
+// 2. API ENDPOINTS & HEALTH CHECK
 // ==========================================
 
-const handleLogin = (req, res) => {
-  const { username, email, password, role } = req.body;
-  const userIdentifier = username || email || 'User';
-  const selectedRole = role || 'General Manager';
-
-  console.log(`[AUTH] Login attempt for user: ${userIdentifier} as ${selectedRole}`);
-
-  // 1. Check database if available
-  if (db && typeof db.loginUser === 'function') {
-    db.loginUser(userIdentifier, password, (err, user) => {
-      if (err) {
-        console.error('DB Authentication error:', err);
-        return res.status(500).json({ success: false, message: 'Database connection error' });
-      }
-      if (user) {
-        return res.json({
-          success: true,
-          token: 'jwt-session-token-' + Date.now(),
-          user: user
-        });
-      } else {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-    });
-    return;
-  }
-
-  // 2. Direct Fallback Login Handler (Allows seamless role access)
-  const userData = {
-    id: 1,
-    username: userIdentifier,
-    name: userIdentifier,
-    role: selectedRole,
-    email: email || `${userIdentifier.toLowerCase()}@baidooprime.com`
-  };
-
-  return res.json({
-    success: true,
-    message: 'Authentication successful',
-    token: 'jwt-session-token-' + Date.now(),
-    user: userData
-  });
-};
-
-// Register login routes
-app.post('/api/login', handleLogin);
-app.post('/api/auth/login', handleLogin);
-app.post('/api/users/login', handleLogin);
-
-// Customer Registration Route
-app.post('/api/register', (req, res) => {
-  const { name, email, phone, password } = req.body;
-  res.json({
-    success: true,
-    message: 'Customer account registered successfully',
-    user: { id: Date.now(), name, email, phone, role: 'Customer' }
-  });
-});
-
-// ==========================================
-// 3. ERP DATA & DASHBOARD ENDPOINTS
-// ==========================================
-
-// Current session validation
-app.get('/api/me', (req, res) => {
-  res.json({
-    success: true,
-    user: { id: 1, name: 'General Manager', role: 'General Manager' }
-  });
-});
-
-// Health check endpoint
+// Health check endpoint (for Render / monitoring)
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', system: 'Baidoo Prime ERP', timestamp: new Date().toISOString() });
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Staff & Users endpoint
+// Staff endpoint
 app.get('/api/staff', (req, res) => {
   if (db && typeof db.getStaff === 'function') {
-    return db.getStaff((err, rows) => {
+    db.getStaff((err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(rows);
     });
+  } else {
+    res.json({ message: 'Staff API operational' });
   }
-  res.json([
-    { id: 1, name: 'General Manager', role: 'General Manager', status: 'Active' },
-    { id: 2, name: 'Receptionist', role: 'Receptionist', status: 'Active' },
-    { id: 3, name: 'Store Manager', role: 'Store Manager', status: 'Active' }
-  ]);
 });
 
 // Notifications endpoint
 app.get('/api/notifications', (req, res) => {
   if (db && typeof db.getNotifications === 'function') {
-    return db.getNotifications((err, rows) => {
+    db.getNotifications((err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(rows);
     });
+  } else {
+    res.json([]);
   }
-  res.json([
-    { id: 1, title: 'System Updated', message: 'Baidoo Prime ERP is online.', created_at: new Date() }
-  ]);
 });
 
+// Delete notification endpoint
 app.delete('/api/notifications/:id', (req, res) => {
-  res.json({ success: true, message: 'Notification deleted' });
-});
-
-// Inventory / Products endpoint
-app.get('/api/products', (req, res) => {
-  res.json([
-    { id: 1, name: 'Standard Product', category: 'General', stock: 100, price: 50.00 }
-  ]);
-});
-
-// Orders & Dashboard Metrics
-app.get('/api/dashboard', (req, res) => {
-  res.json({
-    totalSales: 12500,
-    activeOrders: 8,
-    totalCustomers: 45,
-    pendingDeliveries: 3
-  });
+  const { id } = req.params;
+  if (db && typeof db.deleteNotification === 'function') {
+    db.deleteNotification(id, (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, id });
+    });
+  } else {
+    res.json({ success: true, id });
+  }
 });
 
 // ==========================================
-// 4. FALLBACK SPA CATCH-ALL
+// 3. CATCH-ALL ROUTE (Express 5 Compatible)
 // ==========================================
-app.use((req, res) => {
+// Placed at the end so it only catches non-API requests
+app.get('/*path', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ==========================================
-// 5. SERVER INITIALIZATION
+// 4. SERVER INITIALIZATION
 // ==========================================
 app.listen(PORT, () => {
   console.log(`===========================================`);

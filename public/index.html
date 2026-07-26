@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baidoo Prime ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background-color: #f4f6f9; color: #333; min-height: 100vh; }
+    
+    /* Welcome & Auth Screen */
+    #auth-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; background: linear-gradient(135deg, #1a213e 0%, #0f1426 100%);
+      color: #fff; padding: 20px; text-align: center;
+    }
+    .welcome-card {
+      background: #ffffff; color: #333; padding: 35px; border-radius: 12px;
+      width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .welcome-card h2 { color: #1a213e; margin-bottom: 5px; font-size: 22px; }
+    .welcome-card p { color: #666; font-size: 13px; margin-bottom: 25px; }
+    .auth-form input, .auth-form select, .auth-form button {
+      width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 6px;
+      border: 1px solid #ccc; font-size: 14px; outline: none;
+    }
+    .auth-form button {
+      background-color: #1a213e; color: #fff; font-weight: 600; border: none; cursor: pointer; transition: 0.2s;
+    }
+    .auth-form button:hover { background-color: #2b355e; }
+    .toggle-link { color: #1a213e; cursor: pointer; font-size: 12px; text-decoration: underline; margin-top: 10px; }
+
+    /* Main Workspace */
+    #app-workspace { display: none; }
+    header {
+      background-color: #1a213e; color: #fff; padding: 15px 30px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .user-badge { font-size: 13px; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; }
+    .btn-logout { background: #e74c3c; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px; }
+
+    nav { background-color: #2b355e; display: flex; padding: 0 20px; gap: 5px; }
+    nav button {
+      background: none; border: none; color: #ccc; padding: 14px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+    }
+    nav button.active, nav button:hover { color: #fff; border-bottom: 3px solid #e74c3c; }
+
+    main { padding: 30px; max-width: 1200px; margin: 0 auto; }
+    .card { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 25px; }
+    .card-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #1a213e; display: flex; justify-content: space-between; align-items: center; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+    th { background-color: #f8f9fa; color: #555; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+
+    .btn { background: #1a213e; color: #fff; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+    .btn-danger { background: #e74c3c; }
+    
+    .status-badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+
+    .nav-item { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. LANDING & LOGIN / REGISTRATION SCREEN -->
+  <div id="auth-screen">
+    <div class="welcome-card">
+      <h2 id="greeting-header">Welcome to Baidoo Prime</h2>
+      <p>Ghana's Premier Heavy Duty & Truck Parts Portal</p>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+        <select id="login-role" required onchange="toggleAuthFields()">
+          <option value="gm">General Manager</option>
+          <option value="cashier">Cashier</option>
+          <option value="dispatcher">Dispatcher</option>
+          <option value="customer">Customer</option>
+        </select>
+        <input type="text" id="login-user" placeholder="Username" required />
+        <input type="password" id="login-pass" placeholder="Password" required />
+        <button type="submit">Sign In to Dashboard</button>
+        <p class="toggle-link" onclick="toggleAuthView('register')">New Customer? Create an account here</p>
+      </form>
+
+      <!-- CUSTOMER SELF-REGISTRATION FORM -->
+      <form id="register-form" class="auth-form" style="display: none;" onsubmit="handleRegister(event)">
+        <input type="text" id="reg-name" placeholder="Full Name or Company Name" required />
+        <input type="tel" id="reg-phone" placeholder="Phone Number" required />
+        <input type="password" id="reg-pass" placeholder="Create Password" required />
+        <button type="submit">Register Customer Account</button>
+        <p class="toggle-link" onclick="toggleAuthView('login')">Already registered? Back to Sign In</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MAIN APPLICATION WORKSPACE -->
+  <div id="app-workspace">
+    <header>
+      <div>
+        <h2 style="font-size: 18px;">Baidoo Prime ERP</h2>
+        <span id="user-display" class="user-badge">Role: General Manager</span>
+      </div>
+      <div>
+        <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+      </div>
+    </header>
+
+    <nav>
+      <button id="nav-gm" class="nav-item gm" onclick="showTab('gm-tab')">GM Overview</button>
+      <button id="nav-orders" class="nav-item gm cashier" onclick="showTab('orders-tab')">Orders & Sales</button>
+      <button id="nav-inventory" class="nav-item gm dispatcher" onclick="showTab('inventory-tab')">Inventory & Transfers</button>
+      <button id="nav-messages" class="nav-item gm cashier dispatcher" onclick="showTab('messages-tab')">Notifications</button>
+      <button id="nav-customer" class="nav-item customer" onclick="showTab('customer-tab')">My Customer Portal</button>
+    </nav>
+
+    <main>
+      <!-- GENERAL MANAGER TAB -->
+      <div id="gm-tab" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-title">System Transparency & Financial Control</div>
+          <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Master supervision view across operations, dispatchers, cashiers, and customer balances.</p>
+          <table>
+            <thead>
+              <tr><th>Metric</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>System Operational Status</td><td>Online & Active</td></tr>
+              <tr><td>Privilege Level</td><td>General Manager (Unrestricted Access)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ORDERS TAB (GM & CASHIER) -->
+      <div id="orders-tab" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-title">Create Sales Order</div>
+          <form onsubmit="createOrder(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>Order Number</label>
+                <input type="text" id="ord-no" placeholder="e.g. ORD-1092" required />
+              </div>
+              <div class="form-group">
+                <label>Customer Phone</label>
+                <input type="text" id="ord-phone" placeholder="0240000000" required />
+              </div>
+              <!-- REASON 4: SIMPLIFIED BRAND LIST -->
+              <div class="form-group">
+                <label>Product Brand</label>
+                <select id="ord-product">
+                  <option value="Sinotruck">Sinotruck</option>
+                  <option value="Shacman">Shacman</option>
+                  <option value="Howo">Howo</option>
+                  <option value="FAW">FAW</option>
+                  <option value="Dongfeng">Dongfeng</option>
+                  <option value="Spare Parts / General">Spare Parts / General</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Total Price (GHS)</label>
+                <input type="number" id="ord-total" step="0.01" onchange="calculateBalance()" required />
+              </div>
+              <!-- REASON 1: READONLY FOR ALL ROLES EXCEPT GM -->
+              <div class="form-group">
+                <label>Amount Paid (GHS)</label>
+                <input type="number" id="ord-paid" step="0.01" onchange="calculateBalance()" required />
+              </div>
+              <div class="form-group">
+                <label>Outstanding Balance (GHS)</label>
+                <input type="number" id="ord-balance" step="0.01" readonly />
+              </div>
+            </div>
+            <button type="submit" class="btn">Record Sales Order</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Recent Orders</div>
+          <table>
+            <thead>
+              <tr><th>Order No</th><th>Customer Phone</th><th>Product</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th></tr>
+            </thead>
+            <tbody id="orders-list"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INVENTORY & DISPATCH TAB -->
+      <div id="inventory-tab" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-title">Stock Transfer (Accra &lt;&gt; Tema)</div>
+          <form onsubmit="transferStock(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>Product Line</label>
+                <select id="tr-product">
+                  <option value="Sinotruck">Sinotruck</option>
+                  <option value="Shacman">Shacman</option>
+                  <option value="Howo">Howo</option>
+                  <option value="FAW">FAW</option>
+                  <option value="Dongfeng">Dongfeng</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="tr-qty" min="1" value="1" required />
+              </div>
+              <div class="form-group">
+                <label>From Branch</label>
+                <select id="tr-from"><option value="accra">Accra Warehouse</option><option value="tema">Tema Warehouse</option></select>
+              </div>
+              <div class="form-group">
+                <label>To Branch</label>
+                <select id="tr-to"><option value="tema">Tema Warehouse</option><option value="accra">Accra Warehouse</option></select>
+              </div>
+            </div>
+            <button type="submit" class="btn">Execute Transfer</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Current Warehouse Inventory</div>
+          <table>
+            <thead><tr><th>Product Line</th><th>Accra Quantity</th><th>Tema Quantity</th></tr></thead>
+            <tbody id="inventory-list"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REASON 2: MESSAGES TAB WITH DELETE OPTIONS -->
+      <div id="messages-tab" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-title">
+            <span>Notifications & Messages</span>
+            <button class="btn btn-danger btn-sm" onclick="clearAllReadMessages()">Clear All Read Messages</button>
+          </div>
+          <table>
+            <thead><tr><th>Date</th><th>Notification</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="messages-list"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REASON 5: CUSTOMER PERSONAL PORTAL TAB -->
+      <div id="customer-tab" class="tab-content" style="display: none;">
+        <div class="card">
+          <div class="card-title">My Account Summary</div>
+          <div style="font-size: 16px; margin-bottom: 10px;">
+            <strong>Outstanding Debt Balance:</strong> <span id="cust-debt-display" style="color: #e74c3c; font-weight: 700;">GHS 0.00</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">My Orders & Status</div>
+          <table>
+            <thead><tr><th>Order No</th><th>Product</th><th>Total Cost</th><th>Amount Paid</th><th>Balance Due</th><th>Status</th></tr></thead>
+            <tbody id="cust-orders-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    // REASON 3: DYNAMIC GREETING ON LANDING
+    window.onload = function() {
+      const hour = new Date().getHours();
+      let greeting = "Good Day";
+      if (hour < 12) greeting = "Good Morning";
+      else if (hour < 17) greeting = "Good Afternoon";
+      else greeting = "Good Evening";
+
+      document.getElementById('greeting-header').innerText = `${greeting}! Welcome to Baidoo Prime`;
+    };
+
+    function toggleAuthFields() {
+      const role = document.getElementById('login-role').value;
+      const userField = document.getElementById('login-user');
+      userField.placeholder = role === 'customer' ? "Phone Number" : "Username";
+    }
+
+    function toggleAuthView(view) {
+      if (view === 'register') {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-form').style.display = 'block';
+      } else {
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('login-form').style.display = 'block';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const role = document.getElementById('login-role').value;
+      const username = document.getElementById('login-user').value;
+      const password = document.getElementById('login-pass').value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          currentUser = data;
+          setupWorkspace();
+        } else {
+          alert('Invalid login credentials');
+        }
+      } catch (err) {
+        alert('Server login error. Please try again.');
+      }
+    }
+
+    // REASON 5: CUSTOMER SELF-REGISTRATION
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const phone = document.getElementById('reg-phone').value;
+      const password = document.getElementById('reg-pass').value;
+
+      try {
+        const res = await fetch('/api/customers/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Registration successful! Please login with your phone number.');
+          toggleAuthView('login');
+        } else {
+          alert(data.message || 'Registration failed.');
+        }
+      } catch (err) {
+        alert('Error registering account.');
+      }
+    }
+
+    function setupWorkspace() {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-workspace').style.display = 'block';
+      document.getElementById('user-display').innerText = `Role: ${currentUser.name}`;
+
+      // Hide all nav links initially
+      document.querySelectorAll('.nav-item').forEach(el => el.style.display = 'none');
+
+      // REASON 1: LOCK AMOUNT PAID FOR NON-GM ROLES
+      const paidInput = document.getElementById('ord-paid');
+      if (currentUser.role !== 'gm') {
+        paidInput.setAttribute('readonly', 'readonly');
+      } else {
+        paidInput.removeAttribute('readonly');
+      }
+
+      // REASON 3: ISOLATE WORKSPACE PER ROLE
+      if (currentUser.role === 'gm') {
+        document.querySelectorAll('.gm').forEach(el => el.style.display = 'inline-block');
+        showTab('gm-tab');
+      } else if (currentUser.role === 'cashier') {
+        document.querySelectorAll('.cashier').forEach(el => el.style.display = 'inline-block');
+        showTab('orders-tab');
+      } else if (currentUser.role === 'dispatcher') {
+        document.querySelectorAll('.dispatcher').forEach(el => el.style.display = 'inline-block');
+        showTab('inventory-tab');
+      } else if (currentUser.role === 'customer') {
+        document.querySelectorAll('.customer').forEach(el => el.style.display = 'inline-block');
+        showTab('customer-tab');
+        loadCustomerPortal();
+      }
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      
+      const selectedTab = document.getElementById(tabId);
+      if (selectedTab) selectedTab.style.display = 'block';
+
+      if (tabId === 'orders-tab') loadOrders();
+      if (tabId === 'inventory-tab') loadInventory();
+      if (tabId === 'messages-tab') loadMessages();
+    }
+
+    function calculateBalance() {
+      const total = parseFloat(document.getElementById('ord-total').value) || 0;
+      let paid = parseFloat(document.getElementById('ord-paid').value) || 0;
+      if (currentUser.role !== 'gm') {
+        paid = total; 
+        document.getElementById('ord-paid').value = total;
+      }
+      document.getElementById('ord-balance').value = (total - paid).toFixed(2);
+    }
+
+    async function loadOrders() {
+      const res = await fetch('/api/orders');
+      const orders = await res.json();
+      const list = document.getElementById('orders-list');
+      list.innerHTML = orders.map(o => `
+        <tr>
+          <td>${o.orderNo}</td>
+          <td>${o.customerPhone}</td>
+          <td>${o.itemName}</td>
+          <td>GHS ${o.total.toFixed(2)}</td>
+          <td>GHS ${o.paid.toFixed(2)}</td>
+          <td>GHS ${o.balance.toFixed(2)}</td>
+          <td><span class="status-badge ${o.status === 'Completed' ? 'status-completed' : 'status-pending'}">${o.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function createOrder(e) {
+      e.preventDefault();
+      const orderData = {
+        orderNo: document.getElementById('ord-no').value,
+        customerPhone: document.getElementById('ord-phone').value,
+        itemName: document.getElementById('ord-product').value,
+        total: parseFloat(document.getElementById('ord-total').value),
+        paid: parseFloat(document.getElementById('ord-paid').value) || 0,
+        balance: parseFloat(document.getElementById('ord-balance').value) || 0,
+        status: 'Pending',
+        role: currentUser.role
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Order created successfully!');
+        loadOrders();
+      }
+    }
+
+    async function loadInventory() {
+      const res = await fetch('/api/inventory');
+      const items = await res.json();
+      document.getElementById('inventory-list').innerHTML = items.map(i => `
+        <tr>
+          <td>${i.productName}</td>
+          <td>${i.accraQty} units</td>
+          <td>${i.temaQty} units</td>
+        </tr>
+      `).join('');
+    }
+
+    async function transferStock(e) {
+      e.preventDefault();
+      const payload = {
+        productName: document.getElementById('tr-product').value,
+        qty: parseInt(document.getElementById('tr-qty').value),
+        fromLocation: document.getElementById('tr-from').value,
+        toLocation: document.getElementById('tr-to').value
+      };
+
+      const res = await fetch('/api/inventory/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Stock transferred successfully!');
+        loadInventory();
+      }
+    }
+
+    // REASON 2: MESSAGES & DELETE FUNCTIONALITY
+    async function loadMessages() {
+      const res = await fetch('/api/messages');
+      const msgs = await res.json();
+      document.getElementById('messages-list').innerHTML = msgs.map(m => `
+        <tr>
+          <td>${new Date(m.createdAt).toLocaleDateString()}</td>
+          <td>${m.content || m.title}</td>
+          <td>${m.status}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteMessage(${m.id})">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function deleteMessage(id) {
+      await fetch(`/api/messages/${id}`, { method: 'DELETE' });
+      loadMessages();
+    }
+
+    async function clearAllReadMessages() {
+      await fetch('/api/messages/clear-all', { method: 'DELETE' });
+      loadMessages();
+    }
+
+    // REASON 5: ISOLATED CUSTOMER DATA PORTAL
+    async function loadCustomerPortal() {
+      const res = await fetch(`/api/customers/portal/${currentUser.phone}`);
+      const data = await res.json();
+
+      if (data.customer) {
+        document.getElementById('cust-debt-display').innerText = `GHS ${data.customer.outstandingDebt.toFixed(2)}`;
+      }
+
+      document.getElementById('cust-orders-list').innerHTML = data.orders.map(o => `
+        <tr>
+          <td>${o.orderNo}</td>
+          <td>${o.itemName}</td>
+          <td>GHS ${o.total.toFixed(2)}</td>
+          <td>GHS ${o.paid.toFixed(2)}</td>
+          <td>GHS ${o.balance.toFixed(2)}</td>
+          <td><span class="status-badge ${o.status === 'Completed' ? 'status-completed' : 'status-pending'}">${o.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById('app-workspace').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

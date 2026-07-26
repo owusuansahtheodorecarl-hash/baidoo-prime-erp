@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 
-// Import your database module
+// Import database module
 const db = require('./database');
 
 const app = express();
@@ -36,7 +36,7 @@ app.get('/api/health', (req, res) => {
 // 3. API ENDPOINTS
 // ==========================================
 
-// Example endpoint: Get staff roles / users
+// Staff endpoint
 app.get('/api/staff', (req, res) => {
   if (db && typeof db.getStaff === 'function') {
     db.getStaff((err, rows) => {
@@ -48,7 +48,7 @@ app.get('/api/staff', (req, res) => {
   }
 });
 
-// Example endpoint: Fetch system notifications
+// Notifications endpoint
 app.get('/api/notifications', (req, res) => {
   if (db && typeof db.getNotifications === 'function') {
     db.getNotifications((err, rows) => {
@@ -60,7 +60,7 @@ app.get('/api/notifications', (req, res) => {
   }
 });
 
-// Example endpoint: Delete a notification
+// Delete notification endpoint
 app.delete('/api/notifications/:id', (req, res) => {
   const { id } = req.params;
   if (db && typeof db.deleteNotification === 'function') {
@@ -74,10 +74,9 @@ app.delete('/api/notifications/:id', (req, res) => {
 });
 
 // ==========================================
-// 4. FALLBACK ROUTE (SPA Navigation)
+// 4. FALLBACK ROUTE (Express 5 Compatible Syntax)
 // ==========================================
-// Directs any unmatched GET requests to index.html to prevent 404s
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
